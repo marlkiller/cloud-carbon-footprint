@@ -14,6 +14,14 @@ export interface EstimationResult {
   groupBy: GroupBy
 }
 
+export interface EstimationItem {
+  readonly timestamp: Date
+  serviceEstimates: ServiceData[]
+  periodStartDate?: Date
+  periodEndDate?: Date
+  groupBy: GroupBy
+}
+
 export interface ServiceData {
   readonly cloudProvider: string
   readonly kilowattHours: number

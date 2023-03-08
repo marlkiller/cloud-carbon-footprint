@@ -6,8 +6,10 @@ import moment, { Moment } from 'moment'
 import {
   configLoader,
   EstimationResult,
+  EstimationItem,
   GroupBy,
   Logger,
+  ServiceData,
 } from '@cloud-carbon-footprint/common'
 import { EstimationRequest } from './CreateValidRequest'
 import GoogleCloudCacheManager from './GoogleCloudCacheManager'
@@ -90,11 +92,43 @@ export default function cache(): any {
 
       const cachedEstimates: EstimationResult[] =
         await cacheManager.getEstimates(request, grouping)
+      const filteredEstimates: EstimationResult[] =
+        filterCachedEstimates(cachedEstimates)
 
       // Filter out empty estimates
-      return concat(filterCachedEstimates(cachedEstimates), [])
+      return concat(mergeEqualDate(filteredEstimates), [])
     }
   }
+}
+
+const mergeEqualDate = (estimates: EstimationResult[]) => {
+  const newEstimates: EstimationItem[] = []
+  estimates.forEach((estimate: EstimationResult) => {
+    const estimateItem: EstimationItem = newEstimates.find(
+      (newEstimate: EstimationItem) =>
+        moment
+          .utc(estimate.timestamp)
+          .isSame(moment.utc(newEstimate.timestamp)),
+    )
+    if (!estimateItem) {
+      newEstimates.push(estimate)
+    } else {
+      estimate.serviceEstimates.forEach((serviceData1: ServiceData) => {
+        if (
+          !estimateItem.serviceEstimates.find(
+            (serviceData2: ServiceData) =>
+              serviceData2.accountId === serviceData1.accountId &&
+              serviceData2.serviceName === serviceData1.serviceName &&
+              serviceData2.cloudProvider === serviceData1.cloudProvider &&
+              serviceData2.region === serviceData1.region,
+          )
+        ) {
+          estimateItem.serviceEstimates.push(serviceData1)
+        }
+      })
+    }
+  })
+  return newEstimates
 }
 
 /**
