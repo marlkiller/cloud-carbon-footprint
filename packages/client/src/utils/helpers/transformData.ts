@@ -262,7 +262,7 @@ const useFilterDataFromRecommendations = (
       regions: uniq(regions),
       recommendationTypes: uniq(recommendationTypes),
     })
-  }, [data.recommendations, filteredData])
+  }, [data, filteredData])
 
   return filterResultResponse
 }

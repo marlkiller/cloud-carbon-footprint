@@ -15,6 +15,7 @@ export {
 export { reduceByTimestamp } from './EstimationResult'
 export type {
   EstimationResult,
+  EstimationItem,
   ServiceData,
   TagCollection,
 } from './EstimationResult'
